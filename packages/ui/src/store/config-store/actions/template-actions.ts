@@ -1,5 +1,6 @@
 import { getBuiltinTemplateId } from "@subboost/core/templates/builtin";
 import { TEMPLATES } from "@subboost/core/templates";
+import { DEFAULT_CUSTOM_RULES } from "@subboost/core/config/defaults";
 import { ensureCustomRulesHaveIds } from "@subboost/core/rules/custom-rule-utils";
 import { normalizePersistedRuleOrder } from "@subboost/core/generator/rules";
 import { PROXY_GROUP_MODULES } from "@subboost/core/generator/proxy-groups";
@@ -45,7 +46,7 @@ export function createTemplateActions(
         enabledProxyGroups: templateConfig.groups,
         hiddenProxyGroups: [],
         appliedTemplateId: getBuiltinTemplateId(template),
-        customRules: [],
+        customRules: [...DEFAULT_CUSTOM_RULES],
         customRuleSets: [],
         builtinRuleEdits: {},
         ruleOrder: [],
