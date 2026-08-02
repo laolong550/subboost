@@ -1,0 +1,76 @@
+name: Build Custom Image (324406.xyz 内网直连定制版)
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: '要构建的分支（默认 custom-intranet-direct 定制分支）'
+        required: false
+        default: 'custom-intranet-direct'
+        type: string
+      image_tag:
+        description: '镜像 tag（默认 custom-intranet-direct）'
+        required: false
+        default: 'custom-intranet-direct'
+        type: string
+      build_arch:
+        description: '架构 amd64 / arm64 / amd64,arm64（NAS 用 amd64）'
+        required: false
+        default: 'amd64'
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/laolong550/subboost
+
+jobs:
+  build:
+    name: Build & Push to GHCR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: local/Dockerfile
+          platforms: ${{ inputs.build_arch }}
+          push: true
+          provenance: false
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ inputs.image_tag }}
+            ${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            APP_RELEASE_VERSION=${{ github.ref_name }}
+            APP_BUILD_SHA=${{ github.sha }}
+            APP_VERSION=${{ github.ref_name }}
+            APP_VERSION_TOKEN=${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 输出镜像地址
+        run: |
+          echo "✅ 构建完成，镜像已推送到 GHCR："
+          echo "  ghcr.io/laolong550/subboost:${{ inputs.image_tag }}"
+          echo "  ghcr.io/laolong550/subboost:latest"
+          echo ""
+          echo "NAS 拉取命令（amd64）："
+          echo "  docker pull ghcr.io/laolong550/subboost:latest"
