@@ -5,12 +5,25 @@ import { SUBBOOST_TEMPLATE_CONFIG_SCHEMA } from "@subboost/core/templates/config
 import type { ClashConfig, TemplateType, UserConfig } from "@subboost/core/types/config";
 import type { SubBoostTemplateConfig } from "@subboost/core/types/template-config";
 
+/**
+ * 内网域名直连默认规则（老龙定制）：
+ * dh.324406.xyz 解析到内网 Docker 网段 172.19.0.35，必须走 DIRECT，否则会被代理规则丢给海外节点导致 502。
+ */
+export const DEFAULT_CUSTOM_RULES = [
+  {
+    id: "custom-rule-domain-suffix-324406-xyz-direct-1",
+    type: "DOMAIN-SUFFIX",
+    value: "324406.xyz",
+    target: "DIRECT",
+  },
+] as const;
+
 export const DEFAULT_SUBBOOST_CONFIG = {
   autoSelectStrategy: "url-test",
   testUrl: "https://www.gstatic.com/generate_204",
   testInterval: 300,
   ruleProviderBaseUrl: DEFAULT_RULE_PROVIDER_BASE_URL,
-  customRules: [],
+  customRules: [...DEFAULT_CUSTOM_RULES],
   ruleOrder: [],
   cnIpNoResolve: true,
   experimentalCnUseCnRuleSet: true,
@@ -89,7 +102,7 @@ export function buildDefaultSubBoostTemplateConfig(type: TemplateType): SubBoost
     proxyGroupAdvancedModeEnabled: false,
     customRuleSets: [],
     builtinRuleEdits: {},
-    customRules: [],
+    customRules: [...DEFAULT_CUSTOM_RULES],
     ruleOrder: [],
     cnIpNoResolve: DEFAULT_SUBBOOST_CONFIG.cnIpNoResolve,
     experimentalCnUseCnRuleSet: DEFAULT_SUBBOOST_CONFIG.experimentalCnUseCnRuleSet,
